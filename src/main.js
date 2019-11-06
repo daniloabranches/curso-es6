@@ -2,97 +2,128 @@ import api from "./api";
 
 class App {
   constructor() {
-    this.repositories = [];
+    this.repositorios = [];
 
-    this.formEl = document.getElementById("repo-form");
+    this.idSpanCarregando = "spanCarregando";
 
-    this.inputEl = document.querySelector("input[name=repository]");
+    this.formularioRepositorios = document.getElementById("frmRepositorios");
 
-    this.listEl = document.getElementById("repo-list");
-
-    this.registerHandlers();
+    this.registrarEventos();
   }
 
-  setLoading(loading = true) {
-    if (loading == true) {
-      let loadingEl = document.createElement("span");
-      loadingEl.appendChild(document.createTextNode("Carregando"));
-      loadingEl.setAttribute("id", "loading");
-
-      this.formEl.appendChild(loadingEl);
-    } else {
-      document.getElementById("loading").remove();
-    }
+  registrarEventos() {
+    this.formularioRepositorios.onsubmit = event =>
+      this.adicionarRepositorio(event);
   }
 
-  registerHandlers() {
-    this.formEl.onsubmit = event => this.addRepository(event);
-  }
-
-  async addRepository(event) {
+  async adicionarRepositorio(event) {
     event.preventDefault();
 
-    const repoInput = this.inputEl.value;
+    const nomeRepositorio = document.querySelector(
+      "input[name=txtRepositorio]"
+    );
 
-    if (repoInput.length === 0) {
+    if (nomeRepositorio.value.length === 0) {
+      alert("Informe o repositório");
       return;
     }
 
     try {
-      this.setLoading();
+      this.exibirMensagemCarregando();
 
-      const response = await api.get(`/repos/${repoInput}`);
+      const response = await api.get(`/repos/${nomeRepositorio.value}`);
 
-      const {
-        name,
-        description,
-        html_url,
-        owner: { avatar_url }
-      } = response.data;
+      this.adicionarRepositorioListaInterna(response);
 
-      this.repositories.push({
-        name,
-        description,
-        avatar_url,
-        html_url
-      });
+      nomeRepositorio.innerHTML = "";
 
-      this.inputEl.innerHTML = "";
-
-      this.render();
+      this.recarregarListaRepositorios();
     } catch (error) {
       alert("O repositório não existe");
     }
 
-    this.setLoading(false);
+    this.removerMensagemCarregando();
   }
 
-  render() {
-    this.listEl.innerHTML = "";
+  exibirMensagemCarregando() {
+    let spanCarregando = document.createElement("span");
+    spanCarregando.appendChild(document.createTextNode("Carregando"));
+    spanCarregando.setAttribute("id", this.idSpanCarregando);
 
-    this.repositories.forEach(repo => {
-      let imgEl = document.createElement("img");
-      imgEl.setAttribute("src", repo.avatar_url);
+    this.formularioRepositorios.appendChild(spanCarregando);
+  }
 
-      let titleEl = document.createElement("strong");
-      titleEl.appendChild(document.createTextNode(repo.name));
+  adicionarRepositorioListaInterna(response) {
+    const {
+      name,
+      description,
+      html_url,
+      owner: { avatar_url }
+    } = response.data;
 
-      let descriptionEl = document.createElement("p");
-      descriptionEl.appendChild(document.createTextNode(repo.description));
-
-      let linkEl = document.createElement("a");
-      linkEl.setAttribute("target", "_blank");
-      linkEl.setAttribute("href", repo.html_url);
-      linkEl.appendChild(document.createTextNode("Acessar"));
-
-      let listItemEl = document.createElement("li");
-      listItemEl.appendChild(imgEl);
-      listItemEl.appendChild(titleEl);
-      listItemEl.appendChild(descriptionEl);
-      listItemEl.appendChild(linkEl);
-
-      this.listEl.appendChild(listItemEl);
+    this.repositorios.push({
+      name,
+      description,
+      avatar_url,
+      html_url
     });
+  }
+
+  recarregarListaRepositorios() {
+    const lstRepositorios = document.getElementById("lstRepositorios");
+    lstRepositorios.innerHTML = "";
+
+    this.repositorios.forEach(repositorio => {
+      let itemRepositorio = this.criarItemRepositorio(repositorio);
+      lstRepositorios.appendChild(itemRepositorio);
+    });
+  }
+
+  criarItemRepositorio(repositorio) {
+    let imagemRepositorio = this.criarImagemRepositorio(repositorio);
+    let tituloRepositorio = this.criarTituloRepositorio(repositorio);
+    let descricaoRepositorio = this.criarDescricaoRepositorio(repositorio);
+    let linkRepositorio = this.criarLinkRepositorio(repositorio);
+
+    let itemRepositorio = document.createElement("li");
+    itemRepositorio.appendChild(imagemRepositorio);
+    itemRepositorio.appendChild(tituloRepositorio);
+    itemRepositorio.appendChild(descricaoRepositorio);
+    itemRepositorio.appendChild(linkRepositorio);
+
+    return itemRepositorio;
+  }
+
+  criarImagemRepositorio(repositorio) {
+    const imagemRepositorio = document.createElement("img");
+    imagemRepositorio.setAttribute("src", repositorio.avatar_url);
+    return imagemRepositorio;
+  }
+
+  criarTituloRepositorio(repositorio) {
+    const tituloRepositorio = document.createElement("strong");
+    tituloRepositorio.appendChild(document.createTextNode(repositorio.name));
+    return tituloRepositorio;
+  }
+
+  criarDescricaoRepositorio(repositorio) {
+    const descricaoRepositorio = document.createElement("p");
+    descricaoRepositorio.appendChild(
+      document.createTextNode(repositorio.description)
+    );
+    return descricaoRepositorio;
+  }
+
+  criarLinkRepositorio(repositorio) {
+    const linkRepositorio = document.createElement("a");
+    linkRepositorio.setAttribute("target", "_blank");
+    linkRepositorio.setAttribute("href", repositorio.html_url);
+    linkRepositorio.appendChild(document.createTextNode("Acessar"));
+    return linkRepositorio;
+  }
+
+  removerMensagemCarregando() {
+    document.getElementById(this.idSpanCarregando).remove();
   }
 }
 
