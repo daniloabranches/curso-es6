@@ -1,6 +1,7 @@
 import api from "./api";
 
 import Repositorio from "./Repositorio";
+import ItemHtmlRepositorio from "./ItemHtmlRepositorio";
 
 class App {
   constructor() {
@@ -64,52 +65,10 @@ class App {
     lstRepositorios.innerHTML = "";
 
     this.repositorios.forEach(repositorio => {
-      let itemRepositorio = this.criarItemRepositorio(repositorio);
-      lstRepositorios.appendChild(itemRepositorio);
+      lstRepositorios.appendChild(
+        new ItemHtmlRepositorio(repositorio).obterItemHtmlRepositorio()
+      );
     });
-  }
-
-  criarItemRepositorio(repositorio) {
-    let imagemRepositorio = this.criarImagemRepositorio(repositorio);
-    let tituloRepositorio = this.criarTituloRepositorio(repositorio);
-    let descricaoRepositorio = this.criarDescricaoRepositorio(repositorio);
-    let linkRepositorio = this.criarLinkRepositorio(repositorio);
-
-    let itemRepositorio = document.createElement("li");
-    itemRepositorio.appendChild(imagemRepositorio);
-    itemRepositorio.appendChild(tituloRepositorio);
-    itemRepositorio.appendChild(descricaoRepositorio);
-    itemRepositorio.appendChild(linkRepositorio);
-
-    return itemRepositorio;
-  }
-
-  criarImagemRepositorio(repositorio) {
-    const imagemRepositorio = document.createElement("img");
-    imagemRepositorio.setAttribute("src", repositorio.urlAvatar);
-    return imagemRepositorio;
-  }
-
-  criarTituloRepositorio(repositorio) {
-    const tituloRepositorio = document.createElement("strong");
-    tituloRepositorio.appendChild(document.createTextNode(repositorio.nome));
-    return tituloRepositorio;
-  }
-
-  criarDescricaoRepositorio(repositorio) {
-    const descricaoRepositorio = document.createElement("p");
-    descricaoRepositorio.appendChild(
-      document.createTextNode(repositorio.descricao)
-    );
-    return descricaoRepositorio;
-  }
-
-  criarLinkRepositorio(repositorio) {
-    const linkRepositorio = document.createElement("a");
-    linkRepositorio.setAttribute("target", "_blank");
-    linkRepositorio.setAttribute("href", repositorio.urlHtml);
-    linkRepositorio.appendChild(document.createTextNode("Acessar"));
-    return linkRepositorio;
   }
 
   removerMensagemCarregando() {
